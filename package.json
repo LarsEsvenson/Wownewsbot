@@ -1,0 +1,17 @@
+{
+  "name": "mmo-champ_discord_webhook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.2.1",
+    "feed-poll": "0.0.1",
+    "moment-timezone": "^0.5.13",
+    "request": "^2.83.0"
+  }
+}
