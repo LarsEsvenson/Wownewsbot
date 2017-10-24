@@ -1,35 +1,78 @@
 var moment = require('moment-timezone');
 var request = require('request');
 var fs = require('file-system');
-let webhooks; // this should be an array of webhooks
+var webhooks; // this should be an array of webhooks
+var htmlparser = require("htmlparser2");
+var THUMBNAIL_URL = ""; // thumbnail url holder
+var DESC_TEXT = ""; // description text holder
+var PRINT_TEXT = false; // trigger for saving description text
+var parser = new htmlparser.Parser({
+  /*
+    Here we are parsing the HTML.  
+    We find a jpg URL for a 'full' (non-thumb) image
+    We exclude any text that has a 'heading size' (is surrounded by font: size 3 tags) and append anything else.
+  */
+  onopentag: function(name, attribs){
+    var re = /^(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
+    if (name === "a" && attribs.href.match(re)){
+          THUMBNAIL_URL = THUMBNAIL_URL || attribs.href; // save the link if it does not exist
+    } 
+    else if (name === "img" && attribs.src.match(re)) {
+      THUMBNAIL_URL = THUMBNAIL_URL || attribs.src;
+    }
+    else if (name === "font") { 
+      PRINT_TEXT = false; // do not save into descrption if we are changing the font size
+    }
+  },
+  ontext: function(text){
+    if (PRINT_TEXT) { // if we are allowed to print text
+      if (DESC_TEXT.length < 400 && text.replace(/\s+/g, "")) { // if our current string is less than 400 characters and the text is not empty
+        DESC_TEXT += text; // append to the description string.
+      }
+    }
+  },
+  onclosetag: function(tagname){
+    if (tagname === "font") {
+          PRINT_TEXT = true; // allow the saving of the description string
+    } 
+  }
+}, {decodeEntities: true});
 
+//#### Swap between these for 'testing'.  Subtract can be used to force a webhook post at bot start up since it will use the newest.
+//var lastPost = moment().subtract(1, 'year').format(); // set the bottime to a year ago so that ti will post the newest article, then set its new 'lastPost time'
+var lastPost = moment().format(); // set the bot start time to now so we only see posts after the start up
+//#### 
 
-var lastPost = moment().subtract(1, 'year').format(); // set the bot start time as the last post, so we only send feeds newer than the start time.
-
+// set the rss feed to poll as well as the intraval in seconds.
 var poll = require('feed-poll')(
 [ "http://www.mmo-champion.com/external.php?do=rss&type=newcontent&sectionid=1&days=120&count=10",
 ], 5);
 
-// TODO: make a way to read from file and add webhooks dynamically.
 //var webhooks = ["https://discordapp.com/api/webhooks/370374279470120960/zh2KTJfUoYsXG3A5JUF2gcdL9JgNSvj1Dov_2JfKdrT8w5XAi4Bv37Xt2i4hvnkNKzhp",]
 
 poll.on("cycle", function() {
+  // for every polling cycle, read the webhooks file to build our array of hooks.
   fs.readFile('webhooks', function(err, data) {
     if(err) throw err;
     webhooks = data.toString().split("\n");
-    for(i in webhooks) {
-        console.log(webhooks[i]);
-    }
+    //print all webhooks.
+    // for(i in webhooks) {
+    //     console.log(webhooks[i]);
+    // }
   });
-  //console.log(webhooks[0]);
   console.log(lastPost)
+  //reset the image and description every cycle
+  THUMBNAIL_URL = "";
+  DESC_TEXT = "";
 });
 
-
+//on each article that we find ( this actually will only ever pull info from the 'newest' article)
+// As the poller cycles, it removes the oldest post.
 poll.on("article", function(article) {
   var pubDate = moment(article.published); // save the publish date in a readble time format.
-  //console.log("Title: " + article.title + "\nPublish Date: " + pubDate.tz("America/Chicago").format('MM/DD/YYYY h:mm:ss a') + "\nLink: " + article.link);
   //console.log(article)
+  parser.write(article.content); // parse the html content of the post.
+  parser.end(); // stop parsing
   if (pubDate.diff(lastPost, 'seconds') >= 0) {
     // if the publish date is newer than the last post, then set the lastPost date to now.
     lastPost = moment().format();
@@ -45,6 +88,7 @@ poll.on("article", function(article) {
         "avatar_url": "http://static.mmo-champion.com/images/tranquilizing/logo.png",
         "embeds": [{
           "title": article.title,
+          "description": DESC_TEXT.replace(/\s+/g, " ").replace(/Originally Posted by Blizzard \(Blue Tracker\) /g, ""), // remove any 'excess' whitespace from between the text, as well as remove the 'blue tracker' info
           "url": article.link,
           "color": 1399932,
           "timestamp": moment().format(),
@@ -52,15 +96,11 @@ poll.on("article", function(article) {
             "text": "This webook is in alpha.  Contact Krazyito#6189"
           },
           "thumbnail": {
-            "url": "http://static.mmo-champion.com/images/tranquilizing/logo.png"
+            "url": THUMBNAIL_URL//"http://static.mmo-champion.com/images/tranquilizing/logo.png"
           },
-          "author": {
-            "name": "MMO-Champion",
-            "url": "http://www.mmo-champion.com",
-            "icon_url": "http://static.mmo-champion.com/images/tranquilizing/logo.png"
-          }
         }]
       }
+      //send the payload to the webhook.
       request({
         url: currHook,
         method: "POST",
@@ -72,9 +112,10 @@ poll.on("article", function(article) {
 });
 
 
-
+// start polling
 poll.start();
 
+//on poll errors, throw error.
 poll.on("error", function(err) {
   console.error(err);
 });

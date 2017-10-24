@@ -1,17 +1,18 @@
 {
   "name": "mmo-champ_discord_webhook",
   "version": "1.0.0",
-  "description": "",
-  "main": "bot.js",
+  "description": "polls mmo champion rss feed to post to a list of webhooks",
+  "main": "mmo-bot.js",
+  "repository": "https://github.com/krazyito65/mmo-champion-rss-webhook",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.2.1",
     "feed-poll": "0.0.1",
     "file-system": "^2.2.2",
+    "htmlparser2": "^3.9.2",
     "moment-timezone": "^0.5.13",
     "request": "^2.83.0"
   }
