@@ -5,7 +5,8 @@ var webhooks; // this should be an array of webhooks
 var htmlparser = require("htmlparser2");
 var THUMBNAIL_URL = ""; // thumbnail url holder
 var DESC_TEXT = ""; // description text holder
-var PRINT_TEXT = false; // trigger for saving description text
+var PRINT_TEXT = true; // trigger for saving description text
+var LINK_TEXT= false;
 var parser = new htmlparser.Parser({
   /*
     Here we are parsing the HTML.  
@@ -16,6 +17,7 @@ var parser = new htmlparser.Parser({
     var re = /^http.*(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
     if (name === "a" && attribs.href.match(re)){
           THUMBNAIL_URL = THUMBNAIL_URL || attribs.href; // save the link if it does not exist
+          LINK_TEXT = true; 
     } 
     else if (name === "img" && attribs.src.match(re)) {
       THUMBNAIL_URL = THUMBNAIL_URL || attribs.src;
@@ -23,18 +25,27 @@ var parser = new htmlparser.Parser({
     else if (name === "font") { 
       PRINT_TEXT = false; // do not save into descrption if we are changing the font size
     }
+    else if ( name == "a") {
+      LINK_TEXT = true;
+    }
+    //console.log(name, attribs)
   },
   ontext: function(text){
-    if (PRINT_TEXT) { // if we are allowed to print text
-      if (DESC_TEXT.length < 400 && text.replace(/\s+/g, "")) { // if our current string is less than 400 characters and the text is not empty
+    if (PRINT_TEXT && ! LINK_TEXT) { // if we are allowed to print text
+      if (DESC_TEXT.length < 200 && text.replace(/\s+/g, "")) { // if our current string is less than 400 characters and the text is not empty
         DESC_TEXT += text; // append to the description string.
       }
     }
+    //console.log("--->",text)
   },
   onclosetag: function(tagname){
-    if (tagname === "font") {
+    if (tagname === "font")  {
           PRINT_TEXT = true; // allow the saving of the description string
     } 
+    else if (tagname === "a") {
+      LINK_TEXT = false
+    }
+    //console.log(tagname)
   }
 }, {decodeEntities: true});
 
@@ -76,6 +87,7 @@ poll.on("article", function(article) {
   if (pubDate.diff(lastPost, 'seconds') >= 0) {
     // if the publish date is newer than the last post, then set the lastPost date to now.
     lastPost = moment().format();
+    //THUMBNAIL_URL = THUMBNAIL_URL.replace(/^\/\//g, "http://")
     console.log("Sending new post: " + article.title);
     console.log("Article Link: " + article.link)
     console.log("THUMBNAIL_URL: " + THUMBNAIL_URL);
