@@ -39,8 +39,8 @@ var parser = new htmlparser.Parser({
 }, {decodeEntities: true});
 
 //#### Swap between these for 'testing'.  Subtract can be used to force a webhook post at bot start up since it will use the newest.
-//var lastPost = moment().subtract(1, 'year').format(); // set the bottime to a year ago so that ti will post the newest article, then set its new 'lastPost time'
-var lastPost = moment().format(); // set the bot start time to now so we only see posts after the start up
+var lastPost = moment().subtract(1, 'year').format(); // set the bottime to a year ago so that ti will post the newest article, then set its new 'lastPost time'
+//var lastPost = moment().format(); // set the bot start time to now so we only see posts after the start up
 //#### 
 
 // set the rss feed to poll as well as the intraval in seconds.
