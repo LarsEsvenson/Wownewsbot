@@ -13,7 +13,7 @@ var parser = new htmlparser.Parser({
     We exclude any text that has a 'heading size' (is surrounded by font: size 3 tags) and append anything else.
   */
   onopentag: function(name, attribs){
-    var re = /^(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
+    var re = /^http.*(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
     if (name === "a" && attribs.href.match(re)){
           THUMBNAIL_URL = THUMBNAIL_URL || attribs.href; // save the link if it does not exist
     } 
@@ -76,7 +76,10 @@ poll.on("article", function(article) {
   if (pubDate.diff(lastPost, 'seconds') >= 0) {
     // if the publish date is newer than the last post, then set the lastPost date to now.
     lastPost = moment().format();
-    console.log("Sending new post: " + article.title)
+    console.log("Sending new post: " + article.title);
+    console.log("Article Link: " + article.link)
+    console.log("THUMBNAIL_URL: " + THUMBNAIL_URL);
+    console.log("Description: " + DESC_TEXT)
     for (var hook in webhooks) {
       var currHook = webhooks[hook]; // get the current webhook to send to
       if (! currHook) { continue; } // if the line is empty, skip it.
