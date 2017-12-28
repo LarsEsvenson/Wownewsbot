@@ -107,8 +107,14 @@ poll.on("article", function(article) {
           "url": article.link,
           "color": 1399932,
           "timestamp": moment().format(),
+          "fields": [
+            {
+              "name": "Links",
+              "value": "[Request this webhook](https://goo.gl/forms/S1mkG70XDU543KO23) | [Github](https://github.com/krazyito65/mmo-champion-rss-webhook)"
+            }
+          ],
           "footer": {
-            "text": "This webook is in alpha.  Contact Krazyito#6189"
+            "text": "This webook is in alpha. Request this webhook here: https://goo.gl/forms/S1mkG70XDU543KO23. Contact Krazyito#6189 for support."
           },
           "thumbnail": {
             "url": THUMBNAIL_URL//"http://static.mmo-champion.com/images/tranquilizing/logo.png"
