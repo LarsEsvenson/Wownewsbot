@@ -14,6 +14,7 @@ var parser = new htmlparser.Parser({
     We exclude any text that has a 'heading size' (is surrounded by font: size 3 tags) and append anything else.
   */
   onopentag: function(name, attribs){
+    if  (!attribs.href) { return }
     var re = /^http.*(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
     if (name === "a" && attribs.href.match(re)){
           THUMBNAIL_URL = THUMBNAIL_URL || attribs.href; // save the link if it does not exist
