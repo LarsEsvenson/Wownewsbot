@@ -115,7 +115,7 @@ poll.on("article", function(article) {
             }
           ],
           "footer": {
-            "text": "This webook is in alpha. Contact Krazyito#6189"
+            "text": "This webook is in alpha. Contact Krazyito#1696"
           },
           "thumbnail": {
             "url": THUMBNAIL_URL//"http://static.mmo-champion.com/images/tranquilizing/logo.png"
