@@ -1,2 +1,7 @@
 node_modules/
 webhooks
+webhooks.bkp
+credentials.json
+get_all_webhooks.log
+mmo-python-env/
+new-hooks2.txt
