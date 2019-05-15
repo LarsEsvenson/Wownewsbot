@@ -9,7 +9,7 @@ var PRINT_TEXT = true; // trigger for saving description text
 var LINK_TEXT= false;
 var parser = new htmlparser.Parser({
   /*
-    Here we are parsing the HTML.  
+    Here we are parsing the HTML.
     We find a jpg URL for a 'full' (non-thumb) image
     We exclude any text that has a 'heading size' (is surrounded by font: size 3 tags) and append anything else.
   */
@@ -18,12 +18,12 @@ var parser = new htmlparser.Parser({
     var re = /^http.*(?!.*?thumb).*\.jpg/; // this will match anything that ends in jpg and does not containt a /thumb/ in the url
     if (name === "a" && attribs.href.match(re)){
           THUMBNAIL_URL = THUMBNAIL_URL || attribs.href; // save the link if it does not exist
-          LINK_TEXT = true; 
-    } 
+          LINK_TEXT = true;
+    }
     else if (name === "img" && attribs.src.match(re)) {
       THUMBNAIL_URL = THUMBNAIL_URL || attribs.src;
     }
-    else if (name === "font") { 
+    else if (name === "font") {
       PRINT_TEXT = false; // do not save into descrption if we are changing the font size
     }
     else if ( name == "a") {
@@ -42,7 +42,7 @@ var parser = new htmlparser.Parser({
   onclosetag: function(tagname){
     if (tagname === "font")  {
           PRINT_TEXT = true; // allow the saving of the description string
-    } 
+    }
     else if (tagname === "a") {
       LINK_TEXT = false
     }
@@ -53,7 +53,7 @@ var parser = new htmlparser.Parser({
 //#### Swap between these for 'testing'.  Subtract can be used to force a webhook post at bot start up since it will use the newest.
 //var lastPost = moment().subtract(1, 'year').format(); // set the bottime to a year ago so that ti will post the newest article, then set its new 'lastPost time'
 var lastPost = moment().format(); // set the bot start time to now so we only see posts after the start up
-//#### 
+//####
 
 // set the rss feed to poll as well as the intraval in seconds.
 var poll = require('feed-poll')(
